@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>🌀 היפוכון - מתקן טקסט חכם</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;600&display=swap');
+
+body {
+  font-family: 'Assistant', sans-serif;
+  background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80') no-repeat center center/cover;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+
+.container {
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  padding: 30px;
+  text-align: center;
+  width: 90%;
+  max-width: 600px;
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px #000;
+  color: #f8f8f8;
+}
+
+textarea {
+  width: 100%;
+  height: 120px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: none;
+  padding: 10px;
+  resize: none;
+  outline: none;
+  direction: ltr;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.result {
+  margin-top: 15px;
+  background: rgba(255,255,255,0.15);
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 20px;
+  color: #fff;
+  text-align: right;
+  min-height: 60px;
+  transition: all 0.4s ease;
+  word-wrap: break-word;
+}
+
+.footer {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #eee;
+}
+
+.button {
+  margin: 10px 5px 0 5px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: bold;
+  background-color: rgba(255,255,255,0.25);
+  color: #fff;
+  transition: 0.3s;
+}
+.button:hover {
+  background-color: rgba(255,255,255,0.4);
+}
+
+.credit {
+  margin-top: 20px;
+  font-size: 25px;
+  color: #1C00E8;
+  text-align: center;
+  text-shadow: 0 0 5px #0A49E5;
+}
+.credit a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+}
+.credit a:hover {
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌀היפוּכון - מתקן טקסט חכם</h1>
+    <textarea id="input" placeholder="הקלד כאן טקסט..."></textarea>
+    <div>
+      <button class="button" onclick="copyInput()">📋 העתק</button>
+    </div>
+    <div id="result" class="result">💬 הטקסט יופיע כאן...</div>
+    <div>
+      <button class="button" onclick="copyResult()">📋 העתק</button>
+    </div>
+    <div class="footer"></div>
+  </div>
+
+  <div class="credit">
+    נוצר על ידי progtek-yc • אימייל: y8030@yahoo.com
+  </div>
+
+<script>
+	
+const mapEngToHeb = {
+  't':'א','c':'ב','d':'ג','s':'ד','v':'ה','u':'ו','z':'ז','j':'ח','y':'ט',
+  'h':'י','f':'כ','k':'ל','n':'מ','b':'נ','x':'ס','g':'ע','p':'פ','m':'צ',
+  'e':'ק','r':'ר','a':'ש','w':'\'','q':'/', ',':'ת','.':'.',' ':' ',';':';',
+  '[':'צ',']':'ף','o':'ם','l':'ך','i':'ן',
+  '?':'?','!':'!','@':'@','#':'#','$':'$','%':'%','^':'^','&':'&','*':'*',
+  '(':'(',')':')','-':'-','_':'_','=':'=','+':'+','"':'"',"'" : "'",':':':',
+  '/':'/'
+};
+
+const mapHebToEng = Object.fromEntries(Object.entries(mapEngToHeb).map(([a,b]) => [b,a]));
+
+function detectLanguage(text) {
+  const hebrewLetters = /[א-ת]/;
+  const englishLetters = /[a-zA-Z]/;
+  if (englishLetters.test(text) && !hebrewLetters.test(text)) return 'eng';
+  if (hebrewLetters.test(text) && !englishLetters.test(text)) return 'heb';
+  return 'unknown';
+}
+
+function convertText(text) {
+  const lang = detectLanguage(text);
+  let map = null;
+  if (lang === 'eng') map = mapEngToHeb;
+  else if (lang === 'heb') map = mapHebToEng;
+  if (!map) return "💬 כאן יופיע הטקסט ";
+
+  let result = '';
+  for (let ch of text) {
+    result += map[ch.toLowerCase()] || ch;
+  }
+  return result;
+}
+
+document.getElementById('input').addEventListener('input', function() {
+  const text = this.value.trim();
+  const result = convertText(text);
+  document.getElementById('result').textContent = result || '💬 הטקסט יופיע כאן...';
+});
+
+function copyInput() {
+  const input = document.getElementById('input');
+  navigator.clipboard.writeText(input.value)
+    .then(() => console.log('הועתק מהמקור'))
+    .catch(() => alert('לא ניתן להעתיק. יתכן שהדפדפן חוסם.'));
+}
+
+function copyResult() {
+  const result = document.getElementById('result').textContent;
+  navigator.clipboard.writeText(result)
+    .then(() => console.log('הועתק מהתוצאה'))
+    .catch(() => alert('לא ניתן להעתיק. יתכן שהדפדפן חוסם.'));
+}
+</script>
+</body>
+</html>
