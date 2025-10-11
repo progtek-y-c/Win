@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>יצירת כרטיסי VCARD חכם</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; font-size: 16px; }
+select, button { padding: 8px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; width: 100%; cursor: pointer; }
+button { background-color: #3498db; color: white; border: none; }
+button:hover { background-color: #2980b9; }
+#output { white-space: pre-wrap; background: #fff; padding: 15px; border: 1px solid #ccc; border-radius: 5px; min-height: 100px; font-family: monospace; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+table, th, td { border: 1px solid #ccc; }
+th, td { padding: 8px; text-align: center; }
+th { background: #eee; }
+</style>
+</head>
+<body>
+<h1>יצירת כרטיסי VCARD חכם</h1>
+<p>הדבק/י רשימה של שמות ומספרים (שורה אחת = פריט אחד)</p>
+<textarea id="input"></textarea>
+
+<select id="category">
+    <option value="משפחה">משפחה</option>
+    <option value="חברים">חברים</option>
+    <option value="זמרים">זמרים</option>
+    <option value="רבנים">רבנים</option>
+    <option value="עסקים">עסקים</option>
+    <option value="לקוחות">לקוחות</option>
+    <option value="ספקים">ספקים</option>
+    <option value="חינוך">חינוך</option>
+    <option value="קהילה">קהילה</option>
+    <option value="תלמודי תורה">תלמודי תורה</option>
+    <option value="בתי ספר">בתי ספר</option>
+    <option value="תיכונים">תיכונים</option>
+    <option value="חנויות">חנויות</option>
+    <option value="מפעלים">מפעלים</option>
+    <option value="עסקנים">עסקנים</option>
+    <option value="אישי ציבור">אישי ציבור</option>
+    <option value="חברי כנסת">חכי"ם</option>
+    <option value="מרצים">מרצים</option>
+    <option value="אמנים">אמנים</option>
+    <option value="ספורט">ספורט</option>
+</select>
+
+<div class="controls">
+<button onclick="generateVcards()">צור כרטיסים</button>
+<button onclick="downloadVcard()">הורד כ-VCF</button>
+<button onclick="copyOutput()">העתק פלט</button>
+<button onclick="clearInput()">נקה שדות</button>
+<input type="text" id="newCategory" placeholder="הוסף קטגוריה חדשה">
+<br>
+	</br>
+<button onclick="addCategory()">הוסף</button>
+
+</div>
+
+<h2>תוצאה</h2>
+<div id="output"></div>
+
+<h2>התראות</h2>
+<div id="errors"></div>
+
+<h3>נוצר על ידי progtek-yc אימייל: y8030@yahoo.com</h3>
+<script>
+function countDigits(str){ return (str.match(/\d|\*/g)||[]).length; }
+
+function isValidPhone(num){
+    const cleaned = num.replace(/\s+/g,'');
+    const digits = countDigits(cleaned);
+    return digits >= 9 && (/^(0|[+*])/.test(cleaned));
+}
+
+function generateVcards(){
+    const input = document.getElementById('input').value.trim();
+    if(!input) return;
+    const lines = input.split('\n');
+    const category = document.getElementById('category').value;
+
+    let entries = [];
+    let lastName = null;
+    let pendingNumbers = [];
+    let errors = [];
+
+    lines.forEach((line, idx)=>{
+        const trimmed = line.trim();
+        if(!trimmed) return;
+        const tokens = trimmed.split(/\s+/);
+
+        let lineNumbers = [];
+        let lineText = [];
+
+        tokens.forEach(tok=>{
+            if(/^(\+|\*|\d)/.test(tok)){
+                lineNumbers.push(tok);
+            } else {
+                lineText.push(tok);
+            }
+        });
+
+        // מספר + טקסט באותה שורה
+        if(lineText.length>0 && lineNumbers.length>0){
+            const number = lineNumbers.join('');
+            const text = lineText.join(' ');
+            if(isValidPhone(number)){
+                lastName = text;
+                pendingNumbers = [number];
+            } else {
+                lastName = text + ' ' + number;
+                pendingNumbers = [];
+                errors.push({row:idx+1,name:lastName,phone:'',status:'נשמר כחלק מהשם!',type:'מספר פלאפון לא חוקי'});
+            }
+            return;
+        }
+
+        // רק טקסט
+        if(lineText.length>0 && lineNumbers.length===0){
+            if(lastName){
+                entries.push({name:lastName,numbers:[...pendingNumbers]});
+                pendingNumbers=[];
+            }
+            lastName = lineText.join(' ');
+            return;
+        }
+
+        // רק מספרים
+        if(lineNumbers.length>0 && lineText.length===0){
+            const number = lineNumbers.join('');
+            if(!lastName){
+                if(countDigits(number)>=3){
+                    errors.push({row:idx+1,name:'',phone:number,status:'לא נשמר',type:'מספר בראש הרשימה'});
+                } else {
+                    errors.push({row:idx+1,name:'',phone:number,status:'לא נשמר',type:'מספר קצר מדי'});
+                }
+            } else if(countDigits(number)>=3){
+                pendingNumbers.push(number);
+            } else {
+                errors.push({row:idx+1,name:lastName,phone:number,status:'לא נשמר',type:'מספר קצר מדי'});
+            }
+            return;
+        }
+    });
+
+    if(lastName){
+        entries.push({name:lastName,numbers:[...pendingNumbers]});
+    }
+
+    // בדיקת כפילויות
+    let seen = {};
+    let filtered = [];
+    entries.forEach(e=>{
+        const key = e.name+'|'+e.numbers.join(',');
+        if(seen[key]){
+            errors.push({row:'-',name:e.name,phone:e.numbers.join(','),status:'לא נשמר',type:'כפילות'});
+        } else {
+            seen[key]=true;
+            filtered.push(e);
+        }
+    });
+    entries = filtered;
+
+    // יצירת VCF
+    let vcards = '';
+    entries.forEach(e=>{
+        vcards+=`BEGIN:VCARD
+VERSION:3.0
+FN:${e.name}
+${e.numbers.map(n=>`TEL;TYPE=CELL:${n}`).join('\n')}
+CATEGORIES:${category}
+END:VCARD
+
+`;
+    });
+
+    document.getElementById('output').textContent = vcards;
+
+    // יצירת טבלת התראות
+    if(errors.length>0){
+        let table = '<table><tr><th>שורה</th><th>שם</th><th>פלאפון</th><th>סטטוס</th><th>סוג</th></tr>';
+        errors.forEach(er=>{
+            table += `<tr><td>${er.row}</td><td>${er.name}</td><td>${er.phone}</td><td>${er.status}</td><td>${er.type}</td></tr>`;
+        });
+        table += '</table>';
+        document.getElementById('errors').innerHTML = table;
+    } else {
+        document.getElementById('errors').innerHTML = '';
+    }
+}
+
+function clearInput(){
+    document.getElementById('input').value='';
+    document.getElementById('output').textContent='';
+    document.getElementById('errors').innerHTML='';
+}
+
+function downloadVcard(){
+    const vcards = document.getElementById('output').textContent;
+    if(!vcards) { alert('אין כרטיסים ליצוא.'); return; }
+    const blob = new Blob([vcards], { type:'text/vcard;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='contacts.vcf';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function copyOutput(){
+    const output = document.getElementById('output').textContent;
+    if(!output) { alert('אין פלט להעתקה'); return; }
+    navigator.clipboard.writeText(output).then(()=>alert('הפלט הועתק'));
+}
+</script>
+
+<script>
+function addCategory(){
+    const select = document.getElementById('category');
+    const input = document.getElementById('newCategory');
+    const value = input.value.trim();
+    if(value === '') return;
+    const option = document.createElement('option');
+    option.value = value;
+    option.text = value;
+    select.add(option);
+    select.value = value; // בחר אוטומטית את הקטגוריה החדשה
+    input.value = ''; // נקה השדה
+}
+</script>
+</body>
+</html>
