@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>דף קישורים</title>
+<style>
+body {
+    font-family: 'Assistant', sans-serif;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    margin: 0;
+    padding: 30px;
+    color: #fff;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+ul.links {
+    list-style: none;
+    padding: 0;
+    max-width: 700px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+ul.links li a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    padding: 20px;
+    background: linear-gradient(45deg, #e67e22, #d35400);
+    color: white;
+    font-weight: bold;
+    border-radius: 15px;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+ul.links li a::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.2);
+    transform: skewX(-20deg);
+    transition: all 0.5s ease;
+}
+
+ul.links li a:hover::after {
+    left: 200%;
+}
+
+ul.links li a:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 25px rgba(0,0,0,0.3);
+}
+
+.footer {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 0.9em;
+    color: rgba(255,255,255,0.8);
+}
+</style>
+</head>
+<body>
+
+<h1>קישורים לדפים וקבצים</h1>
+
+<ul class="links">
+    <li><a href="19.html">יצירת כרטיסי אנשי קשר vcard 3.0</a></li>
+    <li><a href="15.html">היפוכון - מתקן טקסט חכם.</a></li>
+    <li><a href="" target="_blank"></a></li>
+    <!-- כאן תוכל להוסיף עוד קישורים לפי הצורך -->
+</ul>
+
+<div class="footer">
+    נוצר על ידי progtek-yc email: y8030@yahoo.com
+</div>
+
+</body>
+</html>
