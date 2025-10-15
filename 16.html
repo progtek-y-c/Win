@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>בודק בטיחות קישורים — progtek y-c</title>
+<style>
+:root{
+  --bg1: #0f172a;
+  --bg2: #0b1020;
+  --accent: #00d1ff;
+  --card: rgba(255,255,255,0.06);
+  --good: #10b981;
+  --warn: #f59e0b;
+  --bad: #ef4444;
+  --glass: rgba(255,255,255,0.04);
+  --glass-2: rgba(255,255,255,0.02);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background: radial-gradient(1200px 600px at 10% 10%, rgba(0,209,255,0.06), transparent), linear-gradient(160deg,var(--bg1),var(--bg2)); color:#e6eef6}
+.container{max-width:920px;margin:40px auto;padding:28px;border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow: 0 8px 30px rgba(2,6,23,0.7);backdrop-filter: blur(6px);}
+.header{display:flex;gap:16px;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(124,58,237,0.15)}
+.logo svg{width:34px;height:34px;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35))}
+.title{font-size:18px;font-weight:700}
+.subtitle{font-size:12px;opacity:0.8;margin-top:4px}
+.card{margin-top:20px;padding:18px;border-radius:14px;background:linear-gradient(180deg,var(--card),transparent);border:1px solid rgba(255,255,255,0.03)}
+.form-row{display:flex;gap:12px;align-items:center}
+.input{
+  flex:1;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);
+  background:var(--glass);color:inherit;font-size:15px;outline:none;
+}
+.input:focus{box-shadow:0 6px 18px rgba(0,0,0,0.6);border-color:rgba(0,209,255,0.18)}
+.btn{
+  padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#7c3aed);
+  color:#00101a;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(7,12,34,0.6)
+}
+.btn:active{transform:translateY(1px)}
+.link-action{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;cursor:pointer}
+.small{font-size:13px;opacity:0.9}
+.result{
+  margin-top:18px;padding:16px;border-radius:12px;background:linear-gradient(180deg,var(--glass-2),transparent);
+  display:flex;gap:12px;align-items:flex-start;border:1px solid rgba(255,255,255,0.02)
+}
+.status-badge{padding:8px 12px;border-radius:10px;font-weight:700}
+.status-safe{background:linear-gradient(90deg, rgba(16,185,129,0.12), rgba(16,185,129,0.06));color:var(--good);border:1px solid rgba(16,185,129,0.12)}
+.status-unknown{background:linear-gradient(90deg, rgba(245,158,11,0.09), rgba(245,158,11,0.03));color:var(--warn);border:1px solid rgba(245,158,11,0.08)}
+.status-danger{background:linear-gradient(90deg, rgba(239,68,68,0.09), rgba(239,68,68,0.03));color:var(--bad);border:1px solid rgba(239,68,68,0.08)}
+.details{font-size:14px;line-height:1.45;opacity:0.95}
+.hints{margin-top:10px;font-size:13px;opacity:0.8}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.small-muted{font-size:12px;opacity:0.6}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.meta-item{background:rgba(255,255,255,0.02);padding:10px;border-radius:10px;font-size:13px}
+.desc-box{margin-top:12px;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px;font-size:14px;min-height:64px}
+.footer{margin-top:20px;padding-top:12px;border-top:1px dashed rgba(255,255,255,0.03);display:flex;justify-content:space-between;align-items:center;font-size:13px;opacity:0.9}
+.badge{font-size:12px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02)}
+.note{margin-top:8px;font-size:12px;opacity:0.8}
+.switch{display:inline-flex;align-items:center;gap:8px}
+.kv{font-weight:700}
+@media (max-width:640px){.form-row{flex-direction:column;align-items:stretch}.header{flex-direction:column;align-items:flex-start}.meta-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <div class="container" role="main">
+    <div class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l7 3v5c0 6-4.5 10-7 12-2.5-2-7-6-7-12V5l7-3z" fill="white" opacity="0.95"/>
+            <path d="M9.5 11.5L11.2 14l3.3-4" stroke="#002" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.12"/>
+          </svg>
+        </div>
+        <div>
+          <div class="title">בודק בטיחות קישורים</div>
+          <div class="subtitle small">הזן קישור וקבל הערכת סיכון ותיאור אוטומטי • progtek y-c</div>
+        </div>
+      </div>
+      <div class="small-muted">גרסה זמנית • אין להחליף סריקה מקצועית</div>
+    </div>
+
+    <div class="card" aria-live="polite">
+      <div class="form-row">
+        <input id="urlInput" class="input" placeholder="הדבק כאן את הקישור לבדיקה (למשל https://example.com)" />
+        <button id="checkBtn" class="btn">בדוק עכשיו</button>
+        <button id="vtBtn" class="link-action" title="פתח ב-VirusTotal">פתח ב-VirusTotal</button>
+      </div>
+
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <label class="switch small-muted"><input id="proxyToggle" type="checkbox" /> השתמש בפרוקסי CORS אם יש צורך</label>
+        <div class="small-muted">| ניסיון אוטומטי לשליפת תיאור מתוך ה-HTML</div>
+      </div>
+
+      <div id="result" class="result" style="display:none">
+        <div id="statusBadge" class="status-badge status-unknown">...בודק</div>
+        <div style="flex:1">
+          <div id="desc" class="details">מחכה לקישור...</div>
+          <div class="hints">
+            <div id="checks" class="small-muted">בדיקות: כללי</div>
+          </div>
+
+          <div class="meta-grid" aria-hidden="false">
+            <div class="meta-item"><div class="kv">כותרת:</div><div id="metaTitle" class="small-muted">-</div></div>
+            <div class="meta-item"><div class="kv">meta description:</div><div id="metaDesc" class="small-muted">-</div></div>
+            <div class="meta-item"><div class="kv">כותרת ראשית (H1):</div><div id="metaH1" class="small-muted">-</div></div>
+            <div class="meta-item"><div class="kv">פוטרים זוהו:</div><div id="metaFooter" class="small-muted">-</div></div>
+            <div class="meta-item"><div class="kv">כפתורים / טפסים:</div><div id="metaBtns" class="small-muted">-</div></div>
+            <div class="meta-item"><div class="kv">קישורים (לינקים):</div><div id="metaLinks" class="small-muted">-</div></div>
+          </div>
+
+          <div class="desc-box" id="autoSummary" aria-live="polite">תיאור אוטומטי יוצג כאן.</div>
+        </div>
+      </div>
+
+      <div class="note small-muted">
+        שים לב: שליפת ה-HTML בדפדפן עלולה להיתקל ב־CORS. מושג "תיאור אוטומטי" נוצר באמצעות ניתוח ה-HTML (title / meta / כותרות / פסקאות / כפתורים). לא כולל ניתוח מדויק של סקריפטים דינאמיים.
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>נוצר על ידי <strong>progtek y-c</strong> • אימייל: progtekyc@gmail.com</div>
+      <div class="badge">מהיר • עיצוב פצצה</div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const urlInput = document.getElementById('urlInput');
+  const checkBtn = document.getElementById('checkBtn');
+  const vtBtn = document.getElementById('vtBtn');
+  const proxyToggle = document.getElementById('proxyToggle');
+
+  const resultEl = document.getElementById('result');
+  const statusBadge = document.getElementById('statusBadge');
+  const desc = document.getElementById('desc');
+  const checks = document.getElementById('checks');
+
+  const metaTitle = document.getElementById('metaTitle');
+  const metaDesc = document.getElementById('metaDesc');
+  const metaH1 = document.getElementById('metaH1');
+  const metaFooter = document.getElementById('metaFooter');
+  const metaBtns = document.getElementById('metaBtns');
+  const metaLinks = document.getElementById('metaLinks');
+  const autoSummary = document.getElementById('autoSummary');
+
+  const blacklist = [
+    "example-malicious.test",
+    "bad-domain.test",
+  ];
+
+  function normalizeUrl(input){
+    try {
+      if (!/^https?:\/\//i.test(input)) input = 'https://' + input;
+      const u = new URL(input);
+      return {ok:true, url: u, host: u.hostname, href: u.href};
+    } catch(e){
+      return {ok:false, error: 'כתובת לא תקנית'};
+    }
+  }
+
+  function isIpHost(host){
+    return /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+  }
+
+  function heuristicsCheck(uobj){
+    const notes = [];
+    let score = 0;
+    if (!uobj.ok){ notes.push('כתובת לא תקנית'); return {score:-999, notes}; }
+
+    const host = uobj.host.toLowerCase();
+    const href = uobj.href;
+
+    for (const b of blacklist){
+      if (host.includes(b)) { notes.push('נמצא ברשימת חסימה פנימית'); score -= 100; }
+    }
+    if (uobj.url.protocol === 'https:') { notes.push('HTTPS ✔️'); score += 6; } else { notes.push('לא HTTPS'); score -= 10; }
+    if (isIpHost(host)) { notes.push('שם דומיין הוא כתובת IP — חשוד'); score -= 20; }
+    if (/@/.test(href)) { notes.push('מכיל @ — חשוד'); score -= 8; }
+    if (href.length > 120) { notes.push('קישור ארוך מאוד — חשוד לפישינג'); score -= 6; }
+    if (/\b(click|free|bonus|secure)\b/i.test(href) && href.length < 60) { notes.push('מילים שיווקיות בקישור — בדוק'); score -= 2; }
+    const dots = host.split('.').length - 1;
+    if (dots >= 3) { notes.push('תת-דומיינים רבים — לפעמים התחזות'); score -= 4; } else { score += 1; }
+    if (host.length < 20) score += 1;
+
+    return {score, notes};
+  }
+
+  async function tryFetchHead(href){
+    try{
+      const res = await fetch(href, {method:'HEAD', mode:'cors'});
+      return {ok:true, status: res.status, statusText: res.statusText};
+    }catch(e){
+      return {ok:false, error: e.message || String(e)};
+    }
+  }
+
+  async function fetchHtmlDirect(href){
+    try{
+      const res = await fetch(href, {method:'GET', mode:'cors'});
+      if (!res.ok) return {ok:false, status: res.status, statusText: res.statusText};
+      const text = await res.text();
+      return {ok:true, text};
+    }catch(e){
+      return {ok:false, error: e.message || String(e)};
+    }
+  }
+
+  // שימוש בפרוקסי ציבורי כגיבוי (AllOrigins) — אפשר לשנות לשרת פרטי אם תרצה.
+  function corsProxyUrl(target){
+    // Raw endpoint שומר על טקסט HTML
+    return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(target);
+  }
+
+  function renderResult(level, text, noteList){
+    resultEl.style.display = 'flex';
+    desc.textContent = text;
+    checks.textContent = 'בדיקות: ' + (noteList.length? noteList.join(' • ') : 'אין הערות נוספות');
+    statusBadge.className = 'status-badge';
+    if (level === 'safe'){ statusBadge.classList.add('status-safe'); statusBadge.textContent = 'בטוח'; }
+    else if (level === 'unknown'){ statusBadge.classList.add('status-unknown'); statusBadge.textContent = 'לא ידוע'; }
+    else { statusBadge.classList.add('status-danger'); statusBadge.textContent = 'מסוכן'; }
+    statusBadge.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  function summarizeContent(parts){
+    // חלקי סיכום: title, metaDesc, firstH1, firstParas, buttons info
+    // זהו סיכום חישובי פשוט — קצר וקריא בעברית.
+    const pieces = [];
+    if (parts.title) pieces.push(parts.title);
+    if (parts.metaDesc) pieces.push(parts.metaDesc);
+    if (parts.h1) pieces.push('כותרת עיקרית: ' + parts.h1);
+    if (parts.paras && parts.paras.length){
+      const p = parts.paras.slice(0,2).join(' • ');
+      pieces.push(p);
+    }
+    const actions = [];
+    if (parts.btnCount) actions.push(parts.btnCount + ' כפתורים');
+    if (parts.formCount) actions.push(parts.formCount + ' טפסים');
+    if (parts.linkCount) actions.push(parts.linkCount + ' קישורים');
+    if (actions.length) pieces.push('מכיל: ' + actions.join(', '));
+    // קיצור לטקסט קצר
+    const joined = pieces.join(' — ');
+    return joined.length > 600 ? joined.slice(0,600) + '…' : joined || 'לא זוהה תוכן משמעותי להצגה.';
+  }
+
+  // main parser
+  function parseHtmlAndExtract(text, baseUrl){
+    try{
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, 'text/html');
+      const title = (doc.querySelector('title') && doc.querySelector('title').textContent.trim()) || '';
+      const metaDesc = (doc.querySelector('meta[name="description"]') && doc.querySelector('meta[name="description"]').getAttribute('content')) || (doc.querySelector('meta[property="og:description"]') && doc.querySelector('meta[property="og:description"]').getAttribute('content')) || '';
+      const h1El = doc.querySelector('h1');
+      const h1 = h1El ? h1El.textContent.trim() : '';
+      const paras = Array.from(doc.querySelectorAll('p')).map(p => p.textContent.trim()).filter(Boolean);
+      const btns = doc.querySelectorAll('button, [role="button"], a.button, .btn, input[type="submit"], input[type="button"]');
+      const forms = doc.querySelectorAll('form');
+      const links = doc.querySelectorAll('a[href]');
+      // try find footer content
+      let footerText = '';
+      const footer = doc.querySelector('footer') || Array.from(doc.querySelectorAll('[id],[class]')).find(el=>{
+        const cls = (el.id + ' ' + el.className).toLowerCase();
+        return cls.includes('footer') || cls.includes('site-footer') || cls.includes('page-footer');
+      });
+      if (footer) footerText = footer.textContent.trim().split('\n').map(s=>s.trim()).filter(Boolean).slice(0,6).join(' • ');
+
+      return {
+        title, metaDesc, h1, paras, btnCount: btns.length, formCount: forms.length, linkCount: links.length, footerText
+      };
+    }catch(e){
+      return null;
+    }
+  }
+
+  async function analyzeUrl(raw){
+    const parsed = normalizeUrl(raw);
+    if (!parsed.ok){ renderResult('unknown', 'כתובת לא תקנית — בדוק את הפורמט', [parsed.error]); return; }
+
+    // heuristics
+    const h = heuristicsCheck(parsed);
+    // show interim
+    renderResult('unknown', 'בודק...', ['מפעיל בדיקות חישוביות']);
+
+    // try HEAD
+    let fetchInfo = await tryFetchHead(parsed.href);
+
+    // Decide access strategy for HTML
+    let htmlResponse = null;
+    if (fetchInfo.ok && fetchInfo.status >= 200 && fetchInfo.status < 400){
+      // try direct GET
+      htmlResponse = await fetchHtmlDirect(parsed.href);
+    } else {
+      // HEAD failed or returned error -> still try GET (CORS may block)
+      htmlResponse = await fetchHtmlDirect(parsed.href);
+    }
+
+    // if direct GET failed and proxy allowed, use proxy
+    if ((!htmlResponse || !htmlResponse.ok) && proxyToggle.checked){
+      const proxy = corsProxyUrl(parsed.href);
+      const prox = await fetchHtmlDirect(proxy);
+      if (prox.ok) htmlResponse = prox;
+      else htmlResponse = htmlResponse || prox;
+    }
+
+    const notes = h.notes.slice();
+    if (fetchInfo.ok) notes.push('שרת זמין (HEAD: ' + fetchInfo.status + ')');
+
+    // Determine level
+    let level = 'unknown';
+    if (h.score <= -50) level = 'danger';
+    else {
+      if (fetchInfo.ok && fetchInfo.status >= 200 && fetchInfo.status < 400){
+        level = h.score > 0 ? 'safe' : 'unknown';
+      } else {
+        if (!fetchInfo.ok){
+          // not accessible via HEAD
+          if (h.score >= 5) level = 'unknown';
+          else if (h.score <= -10) level = 'danger';
+          else level = 'unknown';
+        } else {
+          if (fetchInfo.status >= 400) level = 'danger';
+        }
+      }
+    }
+
+    // parse html if available
+    let parseResult = null;
+    if (htmlResponse && htmlResponse.ok && htmlResponse.text){
+      parseResult = parseHtmlAndExtract(htmlResponse.text, parsed.href);
+      if (parseResult){
+        if (parseResult.title) metaTitle.textContent = parseResult.title;
+        else metaTitle.textContent = '-';
+        if (parseResult.metaDesc) metaDesc.textContent = parseResult.metaDesc;
+        else metaDesc.textContent = '-';
+        metaH1.textContent = parseResult.h1 || '-';
+        metaFooter.textContent = parseResult.footerText || '-';
+        metaBtns.textContent = (parseResult.btnCount || 0) + ' כפתורים / ' + (parseResult.formCount || 0) + ' טפסים';
+        metaLinks.textContent = (parseResult.linkCount || 0) + ' קישורים';
+        const summary = summarizeContent({
+          title: parseResult.title,
+          metaDesc: parseResult.metaDesc,
+          h1: parseResult.h1,
+          paras: parseResult.paras,
+          btnCount: parseResult.btnCount,
+          formCount: parseResult.formCount,
+          linkCount: parseResult.linkCount
+        });
+        autoSummary.textContent = summary;
+      } else {
+        metaTitle.textContent = '-';
+        metaDesc.textContent = '-';
+        metaH1.textContent = '-';
+        metaFooter.textContent = '-';
+        metaBtns.textContent = '-';
+        metaLinks.textContent = '-';
+        autoSummary.textContent = 'לא נצליח לנתח את ה-HTML (בעיית פרסור).';
+        notes.push('לא ניתן לנתח HTML');
+      }
+    } else {
+      metaTitle.textContent = '-';
+      metaDesc.textContent = '-';
+      metaH1.textContent = '-';
+      metaFooter.textContent = '-';
+      metaBtns.textContent = '-';
+      metaLinks.textContent = '-';
+      autoSummary.textContent = 'לא נשלח HTML — ייתכן ש־CORS חסם את הבקשה. נסה להפעיל "פרוקסי CORS" ולבדוק שוב.';
+      if (htmlResponse && htmlResponse.error) notes.push('שגיאה בשליפת HTML: ' + htmlResponse.error);
+    }
+
+    // final message
+    let message = '';
+    if (level === 'danger') message = 'סיכון גבוה — מומלץ לא להמשיך לקישור.';
+    else if (level === 'safe') message = 'נראה בטוח בסיסית — אך זה לא תחליף לסריקה מקצועית.';
+    else message = 'לא ברור — יש נקודות לבדיקה, עיין בתיאור ובמאפייני האתר.';
+
+    renderResult(level, message, notes);
+  }
+
+  checkBtn.addEventListener('click', () => {
+    const raw = urlInput.value.trim();
+    if (!raw){ alert('הכנס קישור לבדיקה'); urlInput.focus(); return; }
+    analyzeUrl(raw);
+  });
+
+  vtBtn.addEventListener('click', () => {
+    const raw = urlInput.value.trim();
+    if (!raw) { alert('הכנס קישור כדי לפתוח ב-VirusTotal'); urlInput.focus(); return; }
+    const encoded = encodeURIComponent(raw);
+    const vtUrl = `https://www.virustotal.com/gui/search/url:${encoded}`;
+    window.open(vtUrl, '_blank');
+  });
+
+  urlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkBtn.click(); });
+
+})();
+</script>
+</body>
+</html>
