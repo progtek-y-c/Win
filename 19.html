@@ -1,234 +1,250 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>יצירת כרטיסי VCARD חכם</title>
+<meta charset="utf-8">
+<title>יוצר VCARD 2.1 — עברית / Quoted-Printable</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
-h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
-textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; font-size: 16px; }
-select, button { padding: 8px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; width: 100%; cursor: pointer; }
-button { background-color: #3498db; color: white; border: none; }
-button:hover { background-color: #2980b9; }
-#output { white-space: pre-wrap; background: #fff; padding: 15px; border: 1px solid #ccc; border-radius: 5px; min-height: 100px; font-family: monospace; margin-top: 10px; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-table, th, td { border: 1px solid #ccc; }
-th, td { padding: 8px; text-align: center; }
-th { background: #eee; }
+  @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600&display=swap');
+
+  body {
+    font-family: "Heebo", "Segoe UI", Tahoma, Arial;
+    background: radial-gradient(circle at top, #0d0d12, #050508 90%);
+    color: #e8e8f8;
+    padding: 25px;
+    direction: rtl;
+    text-shadow: 0 0 4px #000;
+  }
+
+  .card {
+    max-width: 950px;
+    margin: 20px auto;
+    background: rgba(20, 20, 30, 0.92);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 0 25px rgba(93, 0, 255, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(100, 100, 255, 0.25);
+    backdrop-filter: blur(6px);
+  }
+
+  h1 {
+    margin: 0 0 14px 0;
+    text-align: center;
+    color: #77aaff;
+    font-size: 1.8em;
+    text-shadow: 0 0 10px #0088ff, 0 0 20px #4411aa;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 180px;
+    border-radius: 10px;
+    border: 1px solid rgba(100, 100, 255, 0.3);
+    background: rgba(0, 0, 25, 0.65);
+    color: #e0e8ff;
+    padding: 12px;
+    font-size: 15px;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+  textarea:focus {
+    box-shadow: 0 0 12px #3366ff;
+    border-color: #6699ff;
+  }
+
+  .row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  select, input[type=text], button {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(120, 120, 255, 0.4);
+    font-size: 14px;
+    background: rgba(15, 15, 40, 0.9);
+    color: #d0d5ff;
+    transition: all 0.25s ease;
+  }
+  select:focus, input:focus {
+    border-color: #7aa2ff;
+    box-shadow: 0 0 8px #3355ff;
+  }
+
+  button {
+    background: linear-gradient(135deg, #3a57ff, #8b00ff);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    text-shadow: 0 0 6px #000;
+    box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+  }
+  button:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 20px #7aa2ff;
+  }
+  button.alt {
+    background: linear-gradient(135deg, #666, #333);
+    box-shadow: 0 0 8px #222;
+  }
+  button.alt:hover {
+    box-shadow: 0 0 12px #999;
+  }
+
+  #output, #errors {
+    white-space: pre-wrap;
+    background: rgba(10, 10, 25, 0.85);
+    padding: 14px;
+    border: 1px solid rgba(80, 80, 255, 0.3);
+    border-radius: 10px;
+    margin-top: 14px;
+    font-family: "Courier New", monospace;
+    color: #a6baff;
+    box-shadow: inset 0 0 15px rgba(0, 0, 100, 0.5);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    border: 1px solid rgba(80, 80, 255, 0.3);
+    padding: 7px;
+    text-align: center;
+    font-size: 13px;
+    color: #c8d4ff;
+  }
+  th {
+    background: rgba(60, 60, 120, 0.6);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  footer {
+    font-size: 12px;
+    color: #99aaff;
+    margin-top: 16px;
+    text-align: center;
+    opacity: 0.8;
+    text-shadow: 0 0 6px #004;
+  }
+
+  ::selection {
+    background: #0055ff;
+    color: #fff;
+  }
 </style>
+
 </head>
 <body>
-<h1>יצירת כרטיסי VCARD חכם</h1>
-<p>הדבק/י רשימה של שמות ומספרים (שורה אחת = פריט אחד)</p>
-<textarea id="input"></textarea>
-
-<select id="category">
-    <option value="משפחה">משפחה</option>
-    <option value="חברים">חברים</option>
-    <option value="זמרים">זמרים</option>
-    <option value="רבנים">רבנים</option>
-    <option value="עסקים">עסקים</option>
-    <option value="לקוחות">לקוחות</option>
-    <option value="ספקים">ספקים</option>
-    <option value="חינוך">חינוך</option>
-    <option value="קהילה">קהילה</option>
-    <option value="תלמודי תורה">תלמודי תורה</option>
-    <option value="בתי ספר">בתי ספר</option>
-    <option value="תיכונים">תיכונים</option>
-    <option value="חנויות">חנויות</option>
-    <option value="מפעלים">מפעלים</option>
-    <option value="עסקנים">עסקנים</option>
-    <option value="אישי ציבור">אישי ציבור</option>
-    <option value="חברי כנסת">חכי"ם</option>
-    <option value="מרצים">מרצים</option>
-    <option value="אמנים">אמנים</option>
-    <option value="ספורט">ספורט</option>
-</select>
-
-<div class="controls">
-<button onclick="generateVcards()">צור כרטיסים</button>
-<button onclick="downloadVcard()">הורד כ-VCF</button>
-<button onclick="copyOutput()">העתק פלט</button>
-<button onclick="clearInput()">נקה שדות</button>
-<input type="text" id="newCategory" placeholder="הוסף קטגוריה חדשה">
-<br>
-	</br>
-<button onclick="addCategory()">הוסף</button>
-
+<div class="card">
+  <h1>יוצר כרטיסי VCARD 2.1 (עברית, Quoted-Printable)</h1>
+  <p>הדבק/י כאן את הטקסט — שורה אחת = שם. לאחריה שורה או יותר של מספרים (אפשר גם כמה באותה שורה, מופרדים ברווח). בין אנשי קשר — שורה ריקה.</p>
+  <textarea id="input" placeholder="לדוגמא משה כהן 055555555"></textarea>
+  <div class="row" style="margin-top:8px">
+    <select id="category">
+      <option>ללא קטגוריה</option><option>משפחה</option><option>חברים</option><option>לקוחות</option><option>עסקים</option>
+    </select>
+    <input id="newCategory" type="text" placeholder="הוסף קטגוריה חדשה">
+    <button onclick="addCategory()">➕ הוסף קטגוריה</button>
+  </div>
+  <div class="row">
+    <button onclick="generateVcards()">⚙️ צור VCARD</button>
+    <button onclick="downloadVcard()">⬇️ הורד כ-VCF</button>
+    <button onclick="copyOutput()">📋 העתק פלט</button>
+    <button class="alt" onclick="clearAll()">🧹 נקה הכל</button>
+  </div>
+  <h3>פלט VCARD (פורמט 2.1 — Quoted-Printable):</h3>
+  <div id="output"></div>
+  <h3>התראות / שגיאות:</h3>
+  <div id="errors"></div>
+<footer style="text-align:center; font-size:0.9em; color:#999;">
+  דף זה נוצר על ידי <strong style="color:#fff;">progtek-yc</strong> |
+  טלפון: <a href="tel:0796076724" style="color:#eee;">079-6076724</a> |
+  אימייל: <a href="mailto:progtekyc@gmail.com" style="color:#eee;">progtekyc@gmail.com</a>
+</footer>
 </div>
-
-<h2>תוצאה</h2>
-<div id="output"></div>
-
-<h2>התראות</h2>
-<div id="errors"></div>
-
-<h3>נוצר על ידי progtek-yc אימייל: progtekyc@gmail.com</h3>
 <script>
-function countDigits(str){ return (str.match(/\d|\*/g)||[]).length; }
-
-function isValidPhone(num){
-    const cleaned = num.replace(/\s+/g,'');
-    const digits = countDigits(cleaned);
-    return digits >= 9 && (/^(0|[+*])/.test(cleaned));
+function utf8QuotedPrintable(str){
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(str);
+  let out = '';
+  for(const b of bytes){
+    if(b===32) out+=' ';
+    else out+='='+b.toString(16).toUpperCase().padStart(2,'0');
+  }
+  return out;
 }
-
+function normalizePhone(tok){return tok.replace(/[^\d+*]/g,'');}
+function countDigits(s){return (s.match(/\d/g)||[]).length;}
 function generateVcards(){
-    const input = document.getElementById('input').value.trim();
-    if(!input) return;
-    const lines = input.split('\n');
-    const category = document.getElementById('category').value;
-
-    let entries = [];
-    let lastName = null;
-    let pendingNumbers = [];
-    let errors = [];
-
-    lines.forEach((line, idx)=>{
-        const trimmed = line.trim();
-        if(!trimmed) return;
-        const tokens = trimmed.split(/\s+/);
-
-        let lineNumbers = [];
-        let lineText = [];
-
-        tokens.forEach(tok=>{
-            if(/^(\+|\*|\d)/.test(tok)){
-                lineNumbers.push(tok);
-            } else {
-                lineText.push(tok);
-            }
-        });
-
-        // מספר + טקסט באותה שורה
-        if(lineText.length>0 && lineNumbers.length>0){
-            const number = lineNumbers.join('');
-            const text = lineText.join(' ');
-            if(isValidPhone(number)){
-                lastName = text;
-                pendingNumbers = [number];
-            } else {
-                lastName = text + ' ' + number;
-                pendingNumbers = [];
-                errors.push({row:idx+1,name:lastName,phone:'',status:'נשמר כחלק מהשם!',type:'מספר פלאפון לא חוקי'});
-            }
-            return;
-        }
-
-        // רק טקסט
-        if(lineText.length>0 && lineNumbers.length===0){
-            if(lastName){
-                entries.push({name:lastName,numbers:[...pendingNumbers]});
-                pendingNumbers=[];
-            }
-            lastName = lineText.join(' ');
-            return;
-        }
-
-        // רק מספרים
-        if(lineNumbers.length>0 && lineText.length===0){
-            const number = lineNumbers.join('');
-            if(!lastName){
-                if(countDigits(number)>=3){
-                    errors.push({row:idx+1,name:'',phone:number,status:'לא נשמר',type:'מספר בראש הרשימה'});
-                } else {
-                    errors.push({row:idx+1,name:'',phone:number,status:'לא נשמר',type:'מספר קצר מדי'});
-                }
-            } else if(countDigits(number)>=3){
-                pendingNumbers.push(number);
-            } else {
-                errors.push({row:idx+1,name:lastName,phone:number,status:'לא נשמר',type:'מספר קצר מדי'});
-            }
-            return;
-        }
-    });
-
-    if(lastName){
-        entries.push({name:lastName,numbers:[...pendingNumbers]});
-    }
-
-    // בדיקת כפילויות
-    let seen = {};
-    let filtered = [];
-    entries.forEach(e=>{
-        const key = e.name+'|'+e.numbers.join(',');
-        if(seen[key]){
-            errors.push({row:'-',name:e.name,phone:e.numbers.join(','),status:'לא נשמר',type:'כפילות'});
-        } else {
-            seen[key]=true;
-            filtered.push(e);
-        }
-    });
-    entries = filtered;
-
-    // יצירת VCF
-    let vcards = '';
-    entries.forEach(e=>{
-        vcards+=`BEGIN:VCARD
-VERSION:3.0
-FN:${e.name}
-${e.numbers.map(n=>`TEL;TYPE=CELL:${n}`).join('\n')}
-CATEGORIES:${category}
-END:VCARD
-
-`;
-    });
-
-    document.getElementById('output').textContent = vcards;
-
-    // יצירת טבלת התראות
-    if(errors.length>0){
-        let table = '<table><tr><th>שורה</th><th>שם</th><th>פלאפון</th><th>סטטוס</th><th>סוג</th></tr>';
-        errors.forEach(er=>{
-            table += `<tr><td>${er.row}</td><td>${er.name}</td><td>${er.phone}</td><td>${er.status}</td><td>${er.type}</td></tr>`;
-        });
-        table += '</table>';
-        document.getElementById('errors').innerHTML = table;
-    } else {
-        document.getElementById('errors').innerHTML = '';
-    }
+  const raw=document.getElementById('input').value.trim();
+  if(!raw){alert('אין טקסט בקלט');return;}
+  const blocks=raw.split(/\n\s*\n/);
+  const cat=document.getElementById('category').value;
+  const vcards=[];
+  const errs=[];
+  blocks.forEach((block,idx)=>{
+    const lines=block.split(/\n+/).map(l=>l.trim()).filter(l=>l);
+    if(!lines.length)return;
+    const nameLine=lines[0];
+    const nums=lines.slice(1).join(' ').split(/\s+/).map(normalizePhone).filter(n=>n);
+    if(!nameLine && !nums.length){errs.push({i:idx+1,msg:'רשומה ריקה'});return;}
+    const encName=utf8QuotedPrintable(nameLine);
+    const nLine=`N;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:;${encName};;;`;
+    const fnLine=`FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:${encName}`;
+    const phoneTypes=['CELL','HOME','WORK','FAX'];
+    const phoneLines=nums.map((p,i)=>`TEL;${phoneTypes[i]||'OTHER'}:${p}`);
+    const catLine=cat&&cat!=='ללא קטגוריה'?`CATEGORIES;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:${utf8QuotedPrintable(cat)}`:'';
+    const parts=['BEGIN:VCARD','VERSION:2.1',nLine,fnLine];
+    if(catLine)parts.push(catLine);
+    if(phoneLines.length)parts.push(phoneLines.join('\n'));
+    parts.push('END:VCARD');
+    vcards.push(parts.join('\n'));
+  });
+  document.getElementById('output').textContent=vcards.join('\n\n');
+  if(errs.length){
+    let t='<table><tr><th>#</th><th>שגיאה</th></tr>';
+    errs.forEach(e=>t+=`<tr><td>${e.i}</td><td>${e.msg}</td></tr>`);
+    t+='</table>';
+    document.getElementById('errors').innerHTML=t;
+  }else document.getElementById('errors').innerHTML='';
 }
-
-function clearInput(){
-    document.getElementById('input').value='';
-    document.getElementById('output').textContent='';
-    document.getElementById('errors').innerHTML='';
+function clearAll(){
+  document.getElementById('input').value='';
+  document.getElementById('output').textContent='';
+  document.getElementById('errors').innerHTML='';
 }
-
-function downloadVcard(){
-    const vcards = document.getElementById('output').textContent;
-    if(!vcards) { alert('אין כרטיסים ליצוא.'); return; }
-    const blob = new Blob([vcards], { type:'text/vcard;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download='contacts.vcf';
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
 function copyOutput(){
-    const output = document.getElementById('output').textContent;
-    if(!output) { alert('אין פלט להעתקה'); return; }
-    navigator.clipboard.writeText(output).then(()=>alert('הפלט הועתק'));
+  const txt=document.getElementById('output').textContent;
+  if(!txt){alert('אין פלט להעתקה');return;}
+  navigator.clipboard.writeText(txt).then(()=>alert('הפלט הועתק ללוח'));
 }
-</script>
-
-<script>
+function downloadVcard(){
+  const txt=document.getElementById('output').textContent;
+  if(!txt){alert('אין פלט להורדה');return;}
+  let fn=prompt('שם קובץ:','contacts.vcf')||'contacts.vcf';
+  if(!fn.toLowerCase().endsWith('.vcf'))fn+='.vcf';
+  const blob=new Blob([txt],{type:'text/vcard;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=fn;a.click();
+  URL.revokeObjectURL(url);
+}
 function addCategory(){
-    const select = document.getElementById('category');
-    const input = document.getElementById('newCategory');
-    const value = input.value.trim();
-    if(value === '') return;
-    const option = document.createElement('option');
-    option.value = value;
-    option.text = value;
-    select.add(option);
-    select.value = value; // בחר אוטומטית את הקטגוריה החדשה
-    input.value = ''; // נקה השדה
+  const sel=document.getElementById('category');
+  const val=document.getElementById('newCategory').value.trim();
+  if(!val)return;
+  const opt=document.createElement('option');opt.text=val;sel.add(opt);sel.value=val;
+  document.getElementById('newCategory').value='';
 }
 </script>
 </body>
-
 </html>
-
